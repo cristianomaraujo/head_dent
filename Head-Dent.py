@@ -41,7 +41,9 @@ condicoes = ('You are a virtual assistant named HEAD-DENT Bot, and your goal is 
 'In the case of negative answers, ask whether a disorder or lesion of the skull, neck, eyes, ears, nose, paranasal sinuses, teeth, mouth, or another facial or cervical structure not described above but known to cause headache has been diagnosed in the patient?'
 'If the answer is yes, ask whether there is evidence of causality demonstrated by at least two of the following: 1. Headache and/or facial pain developed in temporal relation to the onset of the disorder or appearance of the lesion. 2. One or both of the following: a) Headache and/or facial pain significantly worsened in parallel with the progression of the disorder or lesion. b) Headache and/or facial pain significantly improved or disappeared in parallel with the improvement or resolution of the disorder or lesion. 3. Headache and/or facial pain is exacerbated by pressure applied over the lesion. 4. Headache and/or facial pain is localized according to the site of the lesion.'
 'If the patient answers no, refer to a specialized professional to investigate primary headache, such as a neurologist.'
-'If the first answer is yes, the probable diagnosis is Headache or facial pain attributed to another disorder of the skull, neck, eyes, ears, nose, paranasal sinuses, teeth, mouth, or another facial or cervical structure.')
+'If the first answer is yes, the probable diagnosis is Headache or facial pain attributed to another disorder of the skull, neck, eyes, ears, nose, paranasal sinuses, teeth, mouth, or another facial or cervical structure.'
+
+)
 
 
 
