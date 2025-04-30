@@ -56,8 +56,7 @@ st.sidebar.markdown(
         text-align: justify;
     }
     </style>
-    <div class="footer">1) Daline IH, Slade GD, Fouad AF, Nixdorf DR, Tchivileva IE. Diagnostic Accuracy of a Temporomandibular Disorder Pain Screener in Patients Seeking Endodontic Treatment for Tooth Pain. J Endod. 2024 Jan;50(1):55-63. doi: 10.1016/j.joen.2023.10.011. Epub 2023 Oct 29. PMID: 38379174.<br></div>
-    <div class="footer">2) Gonzalez YM, Schiffman E, Gordon SM, Seago B, Truelove EL, Slade G, Ohrbach R. Development of a brief and effective temporomandibular disorder pain screening questionnaire: reliability and validity. J Am Dent Assoc. 2011 Oct;142(10):1183-91. doi: 10.14219/jada.archive.2011.0088. PMID: 21965492; PMCID: PMC4527600.<br><br><br><br></div>
+    <div class="footer">1) Kowacs F, Macedo DDP, Silva-Néto RP. Classificação Internacional das Cefaleias: The International Classification of Headache Disorders – 3rd ed. (2018) ICHD-3.<br></div>
     """,
     unsafe_allow_html=True
 )
