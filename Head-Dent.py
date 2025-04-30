@@ -15,7 +15,7 @@ logo_url3 = "https://github.com/cristianomaraujo/head_dent/blob/main/capa3.jpg?r
 st.sidebar.image(logo_url3, use_column_width=True, width=800)
 
 st.image(logo_url, use_column_width=True)
-abertura = st.write("Hello! I'm an artificial intelligence-powered chatbot for screening Temporomandibular Disorder in patients complaining of tooth pain. To start our conversation, please enter 'hello' or any information related to the topic in the field below.")
+abertura = st.write("Hello! I'm a chatbot powered by artificial intelligence designed to screen for headaches of clinical relevance to dental practice. To begin, please type 'hello' or enter any information related to your symptoms in the field below.")
 st.sidebar.title("References")
 text_input_center = st.chat_input("Chat with me by typing in the field below")
 condicoes = ('You are a virtual assistant named HEAD-DENT Bot, and your goal is to help dentists manage patients with headaches.'  
