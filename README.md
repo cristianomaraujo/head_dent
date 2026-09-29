@@ -46,3 +46,11 @@ GitHub Actions runs structural tests on pushes and pull requests. Batch evaluati
 ## Limits of this first version
 
 The clinical decisions and follow-up schedules still rely on the language model interpreting the supplied knowledge. The server verifies answer options, result structure, and family IDs, but does **not** independently verify clinical correctness, guideline attribution, or date arithmetic. Converting each of the 68 families into reviewed, executable decision rules and calculating follow-up dates in code are the next steps before prospective clinical use.
+
+### Conversational DART
+
+The interface supports direct chat and follow-up dialogue after guided or full-case assessment. `/api/chat` accepts `context` (the assessment input), `history` (alternating user/assistant pairs), and `message`. It returns `message`, the current `guideline`, and an optional structured `assessment`. Later findings and explicit guideline changes are considered across turns. Only incorporated DART knowledge is used; automated software tests do not establish clinical accuracy.
+
+History remains in browser memory until reload or **Novo caso**. A conversation allows up to 20 rounds. Editing the intake form starts a new conversation only after **Avaliar caso** succeeds. The API stores no conversations in a database.
+
+For repeated expert-labeled conversational tests, use `python -m evals.chat cases.jsonl --repeats 10 --url http://127.0.0.1:8000`. Each JSONL case has `case_id`, `reviewed_by`, `context`, and `turns`; each turn has `message`, `expected_status` (`complete`, `needs_information`, `incompatible`, or `no_assessment`) and optionally `expected_outcome_id`. Results include a CSV and full response transcripts. Calls to a live server use the configured paid model. Clinical ground truth must be supplied by reviewers; matching outcome/status alone does not validate the response text.
