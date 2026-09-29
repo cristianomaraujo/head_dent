@@ -1,0 +1,1672 @@
+[
+  {
+    "id": "T01",
+    "name": "Concussion",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Pain on percussion?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Increased mobility?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Was there displacement?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Pulp sensibility test",
+        "options": [
+          {
+            "value": "1",
+            "label": "Positive"
+          },
+          {
+            "value": "2",
+            "label": "Negative"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Color change",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "Radiograph",
+        "options": [
+          {
+            "value": "1",
+            "label": "No relevant change"
+          },
+          {
+            "value": "2",
+            "label": "Periodontal ligament widening"
+          },
+          {
+            "value": "3",
+            "label": "Progressive periapical radiolucency"
+          }
+        ]
+      },
+      {
+        "key": "G",
+        "label": "Signs of infection/necrosis",
+        "options": [
+          {
+            "value": "1",
+            "label": "Absent"
+          },
+          {
+            "value": "2",
+            "label": "Present"
+          }
+        ]
+      },
+      {
+        "key": "H",
+        "label": "Apex",
+        "options": [
+          {
+            "value": "1",
+            "label": "Open"
+          },
+          {
+            "value": "2",
+            "label": "Closed"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T01-R01",
+        "description": "Concussion without endodontic indication."
+      },
+      {
+        "id": "T01-R02",
+        "description": "Concussion under follow-up for suspected pulpal involvement, without confirmed necrosis."
+      },
+      {
+        "id": "T01-R03",
+        "description": "Concussion with confirmed necrosis/infection; endodontic treatment indicated according to root maturity."
+      }
+    ]
+  },
+  {
+    "id": "T02",
+    "name": "Subluxation",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Increased mobility?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Sulcular bleeding?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Pain on percussion?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Pulp sensibility test",
+        "options": [
+          {
+            "value": "1",
+            "label": "Positive"
+          },
+          {
+            "value": "2",
+            "label": "Negative"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Color change",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "Signs of infection/necrosis",
+        "options": [
+          {
+            "value": "1",
+            "label": "Absent"
+          },
+          {
+            "value": "2",
+            "label": "Present"
+          }
+        ]
+      },
+      {
+        "key": "G",
+        "label": "Associated trauma?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "H",
+        "label": "Apex",
+        "options": [
+          {
+            "value": "1",
+            "label": "Open"
+          },
+          {
+            "value": "2",
+            "label": "Closed"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T02-R01",
+        "description": "Subluxation without endodontic treatment and without need for splinting."
+      },
+      {
+        "id": "T02-R02",
+        "description": "Subluxation without endodontic treatment, with flexible splinting for comfort/stabilization."
+      },
+      {
+        "id": "T02-R03",
+        "description": "Subluxation under pulpal follow-up."
+      },
+      {
+        "id": "T02-R04",
+        "description": "Subluxation with necrosis/infection; endodontic treatment indicated according to root maturity."
+      }
+    ]
+  },
+  {
+    "id": "T03",
+    "name": "Extrusion",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Is the tooth still displaced?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No, it has already been adequately repositioned"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Severity of displacement",
+        "options": [
+          {
+            "value": "1",
+            "label": "Mild/moderate"
+          },
+          {
+            "value": "2",
+            "label": "Severe"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Apex",
+        "options": [
+          {
+            "value": "1",
+            "label": "Open"
+          },
+          {
+            "value": "2",
+            "label": "Closed"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Pulp sensibility test",
+        "options": [
+          {
+            "value": "1",
+            "label": "Positive"
+          },
+          {
+            "value": "2",
+            "label": "Negative"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Is necrosis/infection confirmed?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "Is there an associated crown fracture?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Fracture without pulp exposure"
+          },
+          {
+            "value": "3",
+            "label": "Fracture with pulp exposure"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T03-R01",
+        "description": "Extrusion still displaced: repositioning + splinting."
+      },
+      {
+        "id": "T03-R02",
+        "description": "Extrusion already repositioned: confirm position + splinting/follow-up."
+      },
+      {
+        "id": "T03-R03",
+        "description": "Extrusion in an immature tooth without necrosis: preservation/revascularization."
+      },
+      {
+        "id": "T03-R04",
+        "description": "Extrusion in a mature tooth without confirmed necrosis: follow-up."
+      },
+      {
+        "id": "T03-R05",
+        "description": "Extrusion with necrosis/infection: endodontic treatment according to root maturity."
+      }
+    ]
+  },
+  {
+    "id": "T04",
+    "name": "Lateral Luxation",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Is the tooth still displaced?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No, it has already been adequately repositioned"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Severity",
+        "options": [
+          {
+            "value": "1",
+            "label": "Mild/moderate"
+          },
+          {
+            "value": "2",
+            "label": "Severe"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Apex",
+        "options": [
+          {
+            "value": "1",
+            "label": "Open"
+          },
+          {
+            "value": "2",
+            "label": "Closed"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Associated crown fracture",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Without pulp exposure"
+          },
+          {
+            "value": "3",
+            "label": "With pulp exposure"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Confirmed necrosis/infection?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "External inflammatory root resorption (EIR)?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T04-R01",
+        "description": "Lateral luxation still displaced: repositioning + splinting."
+      },
+      {
+        "id": "T04-R02",
+        "description": "Lateral luxation already repositioned: confirm position + splinting/follow-up."
+      },
+      {
+        "id": "T04-R03",
+        "description": "Open apex without necrosis: preservation/revascularization."
+      },
+      {
+        "id": "T04-R04",
+        "description": "Closed apex, non-severe displacement, without necrosis: follow-up."
+      },
+      {
+        "id": "T04-R05",
+        "description": "Closed apex with severe displacement: guideline-specific branch."
+      },
+      {
+        "id": "T04-R06",
+        "description": "Necrosis and/or EIR: endodontic treatment according to guideline and root maturity."
+      }
+    ]
+  },
+  {
+    "id": "T05",
+    "name": "Intrusion",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Apex",
+        "options": [
+          {
+            "value": "1",
+            "label": "Open"
+          },
+          {
+            "value": "2",
+            "label": "Closed"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Intrusion depth",
+        "options": [
+          {
+            "value": "1",
+            "label": "Up to 3 mm"
+          },
+          {
+            "value": "2",
+            "label": "Between 3 and 7 mm"
+          },
+          {
+            "value": "3",
+            "label": "Greater than 7 mm"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Has spontaneous re-eruption/movement already occurred?",
+        "options": [
+          {
+            "value": "1",
+            "label": "Yes"
+          },
+          {
+            "value": "2",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Has the tooth already been repositioned?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes, orthodontically"
+          },
+          {
+            "value": "3",
+            "label": "Yes, surgically"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Confirmed necrosis/infection?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "EIR?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T05-R01",
+        "description": "Open apex, intrusion up to 7 mm: await re-eruption."
+      },
+      {
+        "id": "T05-R02",
+        "description": "Open apex, no movement within the defined timeframe: orthodontic repositioning."
+      },
+      {
+        "id": "T05-R03",
+        "description": "Open apex, intrusion >7 mm: surgical/orthodontic repositioning according to the guideline."
+      },
+      {
+        "id": "T05-R04",
+        "description": "Open apex with necrosis/EIR: endodontic treatment."
+      },
+      {
+        "id": "T05-R05",
+        "description": "Closed apex, intrusion up to 3 mm: await re-eruption for the timeframe specified by the guideline."
+      },
+      {
+        "id": "T05-R06",
+        "description": "Closed apex, up to 3 mm with no movement after the specified timeframe: repositioning."
+      },
+      {
+        "id": "T05-R07",
+        "description": "Closed apex, 3–7 mm: orthodontic/surgical repositioning."
+      },
+      {
+        "id": "T05-R08",
+        "description": "Closed apex, >7 mm: surgical repositioning."
+      },
+      {
+        "id": "T05-R09",
+        "description": "Closed apex with endodontic indication/EIR: protocol from the selected guideline."
+      }
+    ]
+  },
+  {
+    "id": "T06",
+    "name": "Avulsion",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Apex",
+        "options": [
+          {
+            "value": "1",
+            "label": "Open"
+          },
+          {
+            "value": "2",
+            "label": "Closed"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Has the tooth already been replanted?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Extra-alveolar time",
+        "options": [
+          {
+            "value": "1",
+            "label": "Up to 20 minutes"
+          },
+          {
+            "value": "2",
+            "label": "21–60 minutes"
+          },
+          {
+            "value": "3",
+            "label": "More than 60 minutes"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Storage medium",
+        "options": [
+          {
+            "value": "1",
+            "label": "Appropriate/moist"
+          },
+          {
+            "value": "2",
+            "label": "Dry"
+          },
+          {
+            "value": "3",
+            "label": "Not provided/unknown"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Associated alveolar fracture?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "Splint already placed?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "G",
+        "label": "Current complication",
+        "options": [
+          {
+            "value": "1",
+            "label": "None"
+          },
+          {
+            "value": "2",
+            "label": "Necrosis/infection"
+          },
+          {
+            "value": "3",
+            "label": "EIR"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T06-R01",
+        "description": "Avulsion not yet replanted: immediate management according to the IADT scenario."
+      },
+      {
+        "id": "T06-R02",
+        "description": "Recent replantation with closed apex: initiate the endodontic branch of the selected guideline."
+      },
+      {
+        "id": "T06-R03",
+        "description": "Closed apex with alveolar fracture: prolonged splinting + endodontic treatment according to the guideline."
+      },
+      {
+        "id": "T06-R04",
+        "description": "Replanted open-apex tooth without complication: attempt revascularization."
+      },
+      {
+        "id": "T06-R05",
+        "description": "Open apex with necrosis: apexification/revitalization according to the guideline."
+      },
+      {
+        "id": "T06-R06",
+        "description": "Avulsion with EIR: EIR protocol from the selected guideline."
+      },
+      {
+        "id": "T06-R07",
+        "description": "Prolonged extra-alveolar time: corresponding prognosis/trauma management without inventing a missing protocol."
+      },
+      {
+        "id": "T06-R08",
+        "description": "Replantation already performed and stabilized: do not repeat replantation; proceed to the next appropriate step."
+      },
+      {
+        "id": "T06-R09",
+        "description": "Scenario with insufficient information about replantation/time/storage medium: request only the missing decision-changing information."
+      }
+    ]
+  },
+  {
+    "id": "T07",
+    "name": "Infraction",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Extent of the infraction",
+        "options": [
+          {
+            "value": "1",
+            "label": "Minor"
+          },
+          {
+            "value": "2",
+            "label": "Pronounced"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Is there loss of tooth structure?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Is dentin exposed?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Is there mobility/displacement?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Associated trauma?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T07-R01",
+        "description": "Isolated minor infraction: no treatment."
+      },
+      {
+        "id": "T07-R02",
+        "description": "Pronounced infraction: consider adhesive sealing according to the guideline/knowledge base."
+      },
+      {
+        "id": "T07-R03",
+        "description": "Infraction with an incompatible finding or associated trauma: reclassify/associate the relevant protocol."
+      }
+    ]
+  },
+  {
+    "id": "T08",
+    "name": "Enamel Fracture",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Is dentin exposed?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Is there pulp exposure?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Associated trauma?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Are there subsequent pulpal/periapical signs?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T08-R01",
+        "description": "Fracture limited to enamel: restoration/smoothing; no endodontic treatment."
+      },
+      {
+        "id": "T08-R02",
+        "description": "Enamel fracture with associated trauma: add the management/follow-up of the associated injury."
+      },
+      {
+        "id": "T08-R03",
+        "description": "Incompatible findings or pulpal progression: reclassify/follow the relevant endodontic branch."
+      }
+    ]
+  },
+  {
+    "id": "T09",
+    "name": "Enamel-Dentin Fracture",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Is there pulp exposure?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Is the fragment available?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Did the fragment dry out?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Is immediate definitive restoration possible?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Associated luxation?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "Subsequent necrosis/infection?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "G",
+        "label": "Apex",
+        "options": [
+          {
+            "value": "1",
+            "label": "Open"
+          },
+          {
+            "value": "2",
+            "label": "Closed"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T09-R01",
+        "description": "Immediate sealing/restoration without endodontic treatment."
+      },
+      {
+        "id": "T09-R02",
+        "description": "Fragment available: reattachment/restoration according to the guideline."
+      },
+      {
+        "id": "T09-R03",
+        "description": "No immediate definitive restoration: temporary dentin protection."
+      },
+      {
+        "id": "T09-R04",
+        "description": "Progression to necrosis/infection: endodontic treatment according to root maturity and guideline."
+      }
+    ]
+  },
+  {
+    "id": "T10",
+    "name": "Enamel-Dentin-Pulp Fracture",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Size of the exposure",
+        "options": [
+          {
+            "value": "1",
+            "label": "Small"
+          },
+          {
+            "value": "2",
+            "label": "Large"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Time since exposure",
+        "options": [
+          {
+            "value": "1",
+            "label": "A few hours / early"
+          },
+          {
+            "value": "2",
+            "label": "Delayed"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Apex",
+        "options": [
+          {
+            "value": "1",
+            "label": "Open"
+          },
+          {
+            "value": "2",
+            "label": "Closed"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Associated luxation?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Mild/moderate"
+          },
+          {
+            "value": "3",
+            "label": "Severe"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Is an intraradicular post required?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "Is necrosis/infection already established?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T10-R01",
+        "description": "Direct pulp capping when indicated by the selected guideline."
+      },
+      {
+        "id": "T10-R02",
+        "description": "Partial pulpotomy when indicated by the selected guideline."
+      },
+      {
+        "id": "T10-R03",
+        "description": "Vital pulp therapy without a defined preference between pulp capping and pulpotomy in the selected knowledge base."
+      },
+      {
+        "id": "T10-R04",
+        "description": "Endodontic treatment for restorative/post-related reasons according to the guideline."
+      },
+      {
+        "id": "T10-R05",
+        "description": "Endodontic treatment for necrosis/infection according to root maturity."
+      }
+    ]
+  },
+  {
+    "id": "T11",
+    "name": "Crown-Root Fracture Without Pulp Involvement",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Subgingival extension",
+        "options": [
+          {
+            "value": "1",
+            "label": "Limited/favorable"
+          },
+          {
+            "value": "2",
+            "label": "Extensive/unfavorable"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Mobile coronal fragment?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Restorable?",
+        "options": [
+          {
+            "value": "1",
+            "label": "Yes"
+          },
+          {
+            "value": "2",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Pulp sensibility",
+        "options": [
+          {
+            "value": "1",
+            "label": "Positive"
+          },
+          {
+            "value": "2",
+            "label": "Negative"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Associated trauma?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "Necrosis/infection?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "G",
+        "label": "Apex",
+        "options": [
+          {
+            "value": "1",
+            "label": "Open"
+          },
+          {
+            "value": "2",
+            "label": "Closed"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T11-R01",
+        "description": "Restorable without necrosis: restorative/periodontal treatment according to the guideline."
+      },
+      {
+        "id": "T11-R02",
+        "description": "Mobile fragment: stabilization/removal and restorative planning."
+      },
+      {
+        "id": "T11-R03",
+        "description": "Non-restorable/unfavorable extension: rehabilitative/surgical options from the selected guideline."
+      },
+      {
+        "id": "T11-R04",
+        "description": "Necrosis/infection: endodontic treatment according to root maturity."
+      }
+    ]
+  },
+  {
+    "id": "T12",
+    "name": "Crown-Root Fracture With Pulp Involvement",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Size of the exposure",
+        "options": [
+          {
+            "value": "1",
+            "label": "Small"
+          },
+          {
+            "value": "2",
+            "label": "Large"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Timing",
+        "options": [
+          {
+            "value": "1",
+            "label": "Early"
+          },
+          {
+            "value": "2",
+            "label": "Delayed"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Apex",
+        "options": [
+          {
+            "value": "1",
+            "label": "Open"
+          },
+          {
+            "value": "2",
+            "label": "Closed"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Restorable?",
+        "options": [
+          {
+            "value": "1",
+            "label": "Yes"
+          },
+          {
+            "value": "2",
+            "label": "No"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Associated luxation?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "Need for a post?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "G",
+        "label": "Necrosis/infection?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T12-R01",
+        "description": "Vital pulp therapy/pulp capping when indicated. USE RESTRICTED TO THE ESE BRANCH; DO NOT USE IN THE AAE BRANCH."
+      },
+      {
+        "id": "T12-R02",
+        "description": "Partial pulpotomy when indicated."
+      },
+      {
+        "id": "T12-R03",
+        "description": "Mature tooth with a restorative indication for endodontic treatment/post according to the guideline."
+      },
+      {
+        "id": "T12-R04",
+        "description": "Necrosis/infection: endodontic treatment according to root maturity."
+      },
+      {
+        "id": "T12-R05",
+        "description": "Non-restorable/unfavorable extension: surgical/rehabilitative alternatives from the selected guideline."
+      }
+    ]
+  },
+  {
+    "id": "T13",
+    "name": "Root Fracture",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Location",
+        "options": [
+          {
+            "value": "1",
+            "label": "Apical third"
+          },
+          {
+            "value": "2",
+            "label": "Middle third"
+          },
+          {
+            "value": "3",
+            "label": "Cervical third"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Displaced coronal fragment?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Increased mobility?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Communication of the fracture line with the gingival sulcus?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Pulp sensibility",
+        "options": [
+          {
+            "value": "1",
+            "label": "Positive"
+          },
+          {
+            "value": "2",
+            "label": "Negative"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "Necrosis/infection?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T13-R01",
+        "description": "Root fracture without displacement/necrosis: follow-up."
+      },
+      {
+        "id": "T13-R02",
+        "description": "Displaced fragment: repositioning + splinting."
+      },
+      {
+        "id": "T13-R03",
+        "description": "Cervical fracture: prolonged splinting/specific assessment."
+      },
+      {
+        "id": "T13-R04",
+        "description": "Necrosis of the coronal segment: treat only up to the fracture line."
+      }
+    ]
+  },
+  {
+    "id": "T14",
+    "name": "Alveolar Fracture",
+    "questions": [
+      {
+        "key": "A",
+        "label": "Displaced/mobile alveolar segment?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "B",
+        "label": "Occlusal alteration?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "C",
+        "label": "Pulp sensibility of the involved teeth",
+        "options": [
+          {
+            "value": "1",
+            "label": "Positive"
+          },
+          {
+            "value": "2",
+            "label": "Negative"
+          }
+        ]
+      },
+      {
+        "key": "D",
+        "label": "Pulp exposure in any tooth?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "E",
+        "label": "Confirmed necrosis/infection?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      },
+      {
+        "key": "F",
+        "label": "Associated dental trauma?",
+        "options": [
+          {
+            "value": "1",
+            "label": "No"
+          },
+          {
+            "value": "2",
+            "label": "Yes"
+          }
+        ]
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "T14-R01",
+        "description": "Alveolar fracture: repositioning/stabilization and pulpal monitoring."
+      },
+      {
+        "id": "T14-R02",
+        "description": "Negative sensibility test without other signs: follow-up, without emergency endodontic treatment."
+      },
+      {
+        "id": "T14-R03",
+        "description": "Vital pulp exposure: vital pulp therapy according to the guideline/knowledge base."
+      },
+      {
+        "id": "T14-R04",
+        "description": "Necrosis/infection: endodontic treatment according to root maturity and guideline."
+      }
+    ]
+  }
+]

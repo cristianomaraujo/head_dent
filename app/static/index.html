@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DART · Dental Assessment and Response to Trauma</title>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#e8f5fc;background:#061827;--cyan:#37d7da;--muted:#a4bfce}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(140deg,#061827,#0b3041 65%,#061827)}
+    header{border-bottom:1px solid #ffffff25;background:#061827bb}header img{width:min(360px,85vw);display:block;margin:auto;padding:10px}
+    main{max-width:1160px;margin:36px auto;padding:0 20px 80px}h1{font-size:clamp(29px,4vw,48px);margin:0 0 8px}h2{font-size:21px;margin:0 0 18px}p{line-height:1.5;color:var(--muted)}
+    .intro{display:flex;gap:28px;align-items:center;margin-bottom:30px}.intro img{width:120px;height:120px;object-fit:cover;border-radius:22px}
+    .grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(290px,.75fr);gap:20px}.card{background:#0b2535;border:1px solid #6fbbc145;border-radius:18px;padding:24px;box-shadow:0 12px 36px #0003}
+    label{display:block;font-weight:650;margin:18px 0 7px}select,textarea,input{width:100%;background:#071b29;color:#f1fbff;border:1px solid #659caa77;border-radius:9px;padding:12px;font:inherit}
+    textarea{min-height:125px;resize:vertical}select:focus,textarea:focus,input:focus{outline:2px solid var(--cyan)}
+    .hint{font-size:13px;margin:7px 0}.question{border-top:1px solid #ffffff19;padding-top:6px}.question label{font-size:14px}
+    button{border:0;border-radius:10px;background:var(--cyan);color:#06232d;font:inherit;font-weight:750;padding:13px 23px;cursor:pointer;margin-top:21px}button:disabled{opacity:.5;cursor:wait}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}.tabs button{margin:0;background:#153d4c;color:#d6f3f7;padding:10px 14px}.tabs button.active{background:var(--cyan);color:#06232d}
+    .result{margin-top:20px}.section{padding:13px 0;border-top:1px solid #ffffff23;white-space:pre-wrap}.section strong{display:block;color:var(--cyan);margin-bottom:5px}.badge{display:inline-block;background:#154c55;padding:7px 12px;border-radius:99px;margin-right:7px}
+    .foot{font-size:13px;margin-top:18px}.error{color:#ffbcae}footer{color:var(--muted);font-size:13px;margin-top:30px}
+    @media(max-width:800px){.grid{grid-template-columns:1fr}.intro img{width:74px;height:74px}.card{padding:19px}}
+  </style>
+</head>
+<body>
+  <header><img src="/static/dart-logo.jpeg" alt="DART — Dental Assessment and Response to Trauma"></header>
+  <main>
+    <div class="intro"><img src="/static/dart-symbol.jpeg" alt="Símbolo DART"><div><h1>Avaliação de trauma dentário</h1><p>Protótipo de apoio à decisão para cirurgiões dentistas · dentição permanente</p></div></div>
+    <div class="grid">
+      <section class="card"><h2>Dados clínicos</h2>
+        <div class="tabs"><button id="guided" class="active" type="button">Perguntas guiadas</button><button id="free" type="button">Caso completo</button></div>
+        <label for="injury">Traumatismo</label><select id="injury"><option value="">Selecione uma condição</option></select>
+        <div id="questions"></div>
+        <div id="freeBox" hidden><label for="caseText">Descrição do caso</label><textarea id="caseText" placeholder="Descreva os achados, procedimentos já realizados e o tempo desde o trauma..."></textarea></div>
+        <label for="guideline">Diretriz para conduta endodôntica</label><select id="guideline"><option>ESE</option><option>AAE</option><option value="COMPARE">Comparar ESE × AAE</option></select>
+        <label for="referenceDate">Data do trauma ou procedimento, quando conhecida</label><input type="date" id="referenceDate"><p class="hint">A data permite calcular os retornos quando a diretriz define o evento de referência.</p>
+        <button id="submit" type="button">Avaliar caso</button><p id="message" role="status"></p>
+      </section>
+      <aside><div class="card"><h2>Como usar</h2><p>Escolha a condição e informe os achados disponíveis, ou apresente um caso completo. O sistema solicitará dados que faltam e sinalizará achados incompatíveis.</p><p>As recomendações ESE e AAE permanecem identificadas separadamente. A classificação inicial segue a camada IADT incorporada ao DART.</p><p class="foot">Protótipo de pesquisa. O julgamento clínico e a conferência das diretrizes cabem ao profissional responsável. Evite inserir dados que identifiquem pacientes.</p></div></aside>
+    </div>
+    <section class="card result" id="result" hidden aria-live="polite"></section>
+    <footer>DART · Dental Assessment and Response to Trauma</footer>
+  </main>
+  <script>
+    let catalog=[], mode='guided';
+    const $=id=>document.getElementById(id);
+    const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    fetch('/api/catalog').then(r=>r.json()).then(data=>{catalog=data.conditions; $('injury').innerHTML+=catalog.map(x=>`<option value="${x.id}">${escape(x.name)}</option>`).join('');}).catch(()=>{$('message').textContent='Não foi possível carregar as condições.'});
+    function renderQuestions(){const condition=catalog.find(c=>c.id===$('injury').value);$('questions').innerHTML=mode==='guided'&&condition?condition.questions.map(q=>`<div class="question"><label for="q-${q.key}">${escape(q.key)}. ${escape(q.label)}</label><select id="q-${q.key}" data-question="${q.key}"><option value="">Não informado</option>${q.options.map(o=>`<option value="${o.value}">${escape(o.label)}</option>`).join('')}</select></div>`).join(''):''}
+    $('injury').addEventListener('change',renderQuestions);
+    for(const name of ['guided','free']) $(name).onclick=()=>{mode=name;$('guided').classList.toggle('active',name==='guided');$('free').classList.toggle('active',name==='free');$('freeBox').hidden=name!=='free';renderQuestions()};
+    $('submit').onclick=async()=>{
+      const button=$('submit');button.disabled=true;$('message').textContent='Analisando os dados...';$('message').className='';$('result').hidden=true;
+      const answers={};document.querySelectorAll('[data-question]').forEach(el=>{if(el.value)answers[el.dataset.question]=el.value});
+      const data={injury_id:$('injury').value||null,guideline:$('guideline').value,answers,case_text:mode==='free'?$('caseText').value:'',reference_date:$('referenceDate').value||null,language:'pt'};
+      try{const response=await fetch('/api/assess',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'Não foi possível concluir a avaliação.');
+        $('message').textContent='Avaliação concluída.';
+        const fields=[['Dados faltantes',result.missing_information],['Incompatibilidades',result.incompatibilities],['Conduta imediata',result.management_now],['Tratamento endodôntico',result.endodontic_treatment],['Protocolo endodôntico',result.endodontic_protocol],['Acompanhamento',result.follow_up],['Sinais de alerta',result.warning_signs],['ESE',result.ese],['AAE',result.aae],['Diferenças',result.differences],['Origem das recomendações',result.source_notes]];
+        $('result').innerHTML=`<h2>Resultado</h2><span class="badge">${escape(result.status)}</span>${result.outcome_id?`<span class="badge">${escape(result.outcome_id)}</span>`:''}`+fields.filter(([,v])=>v&&(!Array.isArray(v)||v.length)).map(([label,value])=>`<div class="section"><strong>${label}</strong>${escape(Array.isArray(value)?value.join('\n'):value)}</div>`).join('');$('result').hidden=false;
+      }catch(error){$('message').textContent=error.message;$('message').className='error'}finally{button.disabled=false}
+    };
+  </script>
+</body></html>
