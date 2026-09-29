@@ -5,7 +5,7 @@
   <title>DART · Dental Assessment and Response to Trauma</title>
   <style>
     :root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#e8f5fc;background:#061827;--cyan:#37d7da;--muted:#a4bfce}
-    *{box-sizing:border-box}body{margin:0;background:linear-gradient(140deg,#061827,#0b3041 65%,#061827)}
+    [hidden]{display:none!important}*{box-sizing:border-box}body{margin:0;background:linear-gradient(140deg,#061827,#0b3041 65%,#061827)}
     header{border-bottom:1px solid #ffffff25;background:#061827bb}header img{width:min(360px,85vw);display:block;margin:auto;padding:10px}
     main{max-width:1160px;margin:36px auto;padding:0 20px 80px}h1{font-size:clamp(29px,4vw,48px);margin:0 0 8px}h2{font-size:21px;margin:0 0 18px}p{line-height:1.5;color:var(--muted)}
     .intro{display:flex;gap:28px;align-items:center;margin-bottom:30px}.intro img{width:120px;height:120px;object-fit:cover;border-radius:22px}
@@ -26,56 +26,46 @@
   <main>
     <div class="intro"><img src="/static/dart-symbol.jpeg" alt="Símbolo DART"><div><h1>Avaliação de trauma dentário</h1><p>Protótipo de apoio à decisão para cirurgiões dentistas · dentição permanente</p></div></div>
     <div class="grid">
-      <section class="card"><h2>Dados clínicos</h2>
-        <div class="tabs"><button id="guided" class="active" type="button">Perguntas guiadas</button><button id="free" type="button">Caso completo</button></div>
+      <section class="card" id="triage"><h2>Ficha de triagem</h2><p class="hint">Selecione os achados disponíveis. Você pode deixar informações como “Não informado”; o DART perguntará o que faltar.</p>
         <label for="injury">Traumatismo</label><select id="injury"><option value="">Selecione uma condição</option></select>
         <div id="questions"></div>
-        <div id="freeBox" hidden><label for="caseText">Descrição do caso</label><textarea id="caseText" placeholder="Descreva os achados, procedimentos já realizados e o tempo desde o trauma..."></textarea></div>
         <label for="guideline">Diretriz para conduta endodôntica</label><select id="guideline"><option>ESE</option><option>AAE</option><option value="COMPARE">Comparar ESE × AAE</option></select>
         <label for="referenceDate">Data do trauma ou procedimento, quando conhecida</label><input type="date" id="referenceDate"><p class="hint">A data permite calcular os retornos quando a diretriz define o evento de referência.</p>
-        <button id="submit" type="button">Avaliar caso</button><p id="message" role="status"></p>
+        <button id="submit" type="button">Iniciar conversa</button><p id="message" role="status"></p>
       </section>
-      <aside><div class="card"><h2>Como usar</h2><p>Escolha a condição e informe os achados disponíveis, ou apresente um caso completo. O sistema solicitará dados que faltam e sinalizará achados incompatíveis.</p><p>As recomendações ESE e AAE permanecem identificadas separadamente. A classificação inicial segue a camada IADT incorporada ao DART.</p><p class="foot">Protótipo de pesquisa. O julgamento clínico e a conferência das diretrizes cabem ao profissional responsável. Evite inserir dados que identifiquem pacientes.</p></div></aside>
+      <aside><div class="card"><h2>Como usar</h2><p>Preencha a ficha e clique em “Iniciar conversa”. O DART responderá primeiro, usando a triagem para perguntar sobre os dados necessários ou orientar a conduta. Depois, continue conversando com o bot.</p><p>As recomendações ESE e AAE permanecem identificadas separadamente. A classificação inicial segue a camada IADT incorporada ao DART.</p><p class="foot">Protótipo de pesquisa. O julgamento clínico e a conferência das diretrizes cabem ao profissional responsável. Evite inserir dados que identifiquem pacientes.</p></div></aside>
     </div>
-    <section class="card result" id="result" hidden aria-live="polite"></section>
-    <section class="card result" aria-labelledby="chatTitle"><h2 id="chatTitle">Converse com o DART</h2><p>Comece por aqui ou continue a avaliação acima. Acrescente achados, tire dúvidas e peça a comparação das diretrizes.</p><p class="hint">O histórico fica nesta aba e é apagado ao recarregar. Alterações no formulário só entram na conversa ao clicar em “Avaliar caso”, iniciando uma nova avaliação.</p><div id="chatLog" class="chatlog" role="log" aria-live="polite"></div><label for="chatInput">Sua mensagem</label><textarea id="chatInput" maxlength="12000" placeholder="Descreva o caso ou faça uma pergunta... Enter envia; Shift + Enter cria uma linha."></textarea><div class="chat-actions"><button id="sendChat" type="button">Enviar ao DART</button><button id="newCase" type="button">Novo caso</button></div><p id="chatStatus" role="status"></p></section>
+    <section class="card result" id="chatPanel" hidden aria-labelledby="chatTitle"><h2 id="chatTitle">Converse com o DART</h2><p>O DART recebeu a triagem. Responda às perguntas do bot ou acrescente achados ao longo da conversa.</p><p class="hint">O histórico fica nesta aba e é apagado ao recarregar. Para preencher outra ficha, clique em “Novo caso”.</p><div id="chatLog" class="chatlog" role="log" aria-live="polite"></div><label for="chatInput">Sua mensagem</label><textarea id="chatInput" maxlength="12000" placeholder="Descreva o caso ou faça uma pergunta... Enter envia; Shift + Enter cria uma linha."></textarea><div class="chat-actions"><button id="sendChat" type="button">Enviar ao DART</button><button id="newCase" type="button">Novo caso</button></div><p id="chatStatus" role="status"></p></section>
     <footer>DART · Dental Assessment and Response to Trauma</footer>
   </main>
   <script>
-    let catalog=[], mode='guided', history=[], context=null, busy=false;
+    let catalog=[], history=[], context=null, busy=false;
     const $=id=>document.getElementById(id);
     const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    fetch('/api/catalog').then(r=>r.json()).then(data=>{catalog=data.conditions; $('injury').innerHTML+=catalog.map(x=>`<option value="${x.id}">${escape(x.name)}</option>`).join('');}).catch(()=>{$('message').textContent='Não foi possível carregar as condições.'});
-    function renderQuestions(){const condition=catalog.find(c=>c.id===$('injury').value);$('questions').innerHTML=mode==='guided'&&condition?condition.questions.map(q=>`<div class="question"><label for="q-${q.key}">${escape(q.key)}. ${escape(q.label)}</label><select id="q-${q.key}" data-question="${q.key}"><option value="">Não informado</option>${q.options.map(o=>`<option value="${o.value}">${escape(o.label)}</option>`).join('')}</select></div>`).join(''):''}
+    fetch('/api/catalog').then(r=>{if(!r.ok)throw Error();return r.json()}).then(data=>{catalog=data.conditions;$('injury').innerHTML+=catalog.map(x=>`<option value="${x.id}">${escape(x.name)}</option>`).join('')}).catch(()=>{$('message').textContent='Não foi possível carregar as condições. Recarregue a página.'});
+    function renderQuestions(){const condition=catalog.find(c=>c.id===$('injury').value);$('questions').innerHTML=condition?condition.questions.map(q=>`<div class="question"><label for="q-${q.key}">${escape(q.label)}</label><select id="q-${q.key}" data-question="${q.key}"><option value="">Não informado</option>${q.options.map(o=>`<option value="${o.value}">${escape(o.label)}</option>`).join('')}</select></div>`).join(''):''}
     $('injury').addEventListener('change',renderQuestions);
-    for(const name of ['guided','free']) $(name).onclick=()=>{mode=name;$('guided').classList.toggle('active',name==='guided');$('free').classList.toggle('active',name==='free');$('freeBox').hidden=name!=='free';renderQuestions()};
-    $('submit').onclick=async()=>{
-      if(busy)return;busy=true;const button=$('submit');button.disabled=true;$('sendChat').disabled=true;$('newCase').disabled=true;$('message').textContent='Analisando os dados...';$('message').className='';$('result').hidden=true;
-      const answers={};document.querySelectorAll('[data-question]').forEach(el=>{if(el.value)answers[el.dataset.question]=el.value});
-      const data={injury_id:$('injury').value||null,guideline:$('guideline').value,answers,case_text:mode==='free'?$('caseText').value:'',reference_date:$('referenceDate').value||null,language:'pt'};
-      try{const response=await fetch('/api/assess',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'Não foi possível concluir a avaliação.');
-        $('message').textContent='Avaliação concluída.';
-        renderResult(result);
-        context=data;history=[{role:'user',content:'Avalie este caso inicial.'},{role:'assistant',content:JSON.stringify(result)}];
-        $('chatLog').replaceChildren();bubble('assistant','Avaliação inicial disponível acima. Você pode acrescentar achados ou fazer perguntas sobre este caso.');
-
-      }catch(error){$('message').textContent=error.message;$('message').className='error'}finally{busy=false;button.disabled=false;$('sendChat').disabled=false;$('newCase').disabled=false}
-    };
-    function renderResult(result){
-      const fields=[['Dados faltantes',result.missing_information],['Incompatibilidades',result.incompatibilities],['Conduta imediata',result.management_now],['Tratamento endodôntico',result.endodontic_treatment],['Protocolo endodôntico',result.endodontic_protocol],['Acompanhamento',result.follow_up],['Sinais de alerta',result.warning_signs],['ESE',result.ese],['AAE',result.aae],['Diferenças',result.differences],['Origem das recomendações',result.source_notes]];
-        $('result').innerHTML=`<h2>Resultado</h2><span class="badge">${escape(result.status)}</span>${result.outcome_id?`<span class="badge">${escape(result.outcome_id)}</span>`:''}`+fields.filter(([,v])=>v&&(!Array.isArray(v)||v.length)).map(([label,value])=>`<div class="section"><strong>${label}</strong>${escape(Array.isArray(value)?value.join('\n'):value)}</div>`).join('');$('result').hidden=false;
-    }
     function bubble(role,text){const item=document.createElement('div');item.className='bubble '+role;const label=document.createElement('strong');label.textContent=role==='user'?'Você':'DART';item.append(label,document.createTextNode(text));$('chatLog').append(item);item.scrollIntoView({block:'nearest'});}
+    function setBusy(value){busy=value;for(const id of ['submit','sendChat','newCase'])$(id).disabled=value;document.querySelectorAll('#triage select,#triage input').forEach(el=>el.disabled=value);}
+    async function requestChat(activeContext,message,previous){const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({context:activeContext,history:previous,message})});const reply=await response.json();if(!response.ok)throw Error(typeof reply.detail==='string'?reply.detail:'Não foi possível responder.');return reply;}
+    function remember(activeContext,message,reply){context={...activeContext,guideline:reply.guideline};history.push({role:'user',content:message},{role:'assistant',content:JSON.stringify(reply)});$('chatStatus').textContent='Diretriz atual: '+reply.guideline;}
+    $('submit').onclick=async()=>{
+      if(busy)return;if(!$('injury').value){$('message').textContent='Selecione o traumatismo para iniciar a conversa.';return;}
+      const answers={};document.querySelectorAll('[data-question]').forEach(el=>{if(el.value)answers[el.dataset.question]=el.value});
+      const data={injury_id:$('injury').value,guideline:$('guideline').value,answers,case_text:'',reference_date:$('referenceDate').value||null,language:'pt'};
+      const message='Receba esta ficha de triagem e faça a primeira resposta ao dentista. Se faltarem dados clínicos necessários, diga quais são e pergunte ao profissional, sem presumir os achados. Se os dados forem suficientes, apresente a orientação com base no DART.';
+      setBusy(true);$('message').textContent='DART está preparando a primeira resposta...';$('message').className='';
+      try{const reply=await requestChat(data,message,[]);history=[];remember(data,message,reply);$('chatLog').replaceChildren();$('chatPanel').hidden=false;document.querySelector('.grid').hidden=true;bubble('assistant',reply.message);$('message').textContent='';$('chatInput').focus();}
+      catch(error){$('message').textContent=error.message;$('message').className='error';}finally{setBusy(false);}
+    };
     $('sendChat').onclick=async()=>{
-      const message=$('chatInput').value.trim();if(!message||busy)return;
-      if(history.length>=40){$('chatStatus').textContent='Limite de 20 rodadas atingido. Inicie um novo caso.';return;}
-      const activeContext=context||{injury_id:null,guideline:$('guideline').value,answers:{},case_text:'',reference_date:$('referenceDate').value||null,language:'pt'};
-      busy=true;for(const id of ['submit','sendChat','newCase'])$(id).disabled=true;$('chatStatus').textContent='DART está respondendo...';$('chatStatus').className='';
-      try{const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({context:activeContext,history,message})});const reply=await response.json();if(!response.ok)throw Error(typeof reply.detail==='string'?reply.detail:'Não foi possível responder.');
-        context={...activeContext,guideline:reply.guideline};history.push({role:'user',content:message},{role:'assistant',content:JSON.stringify(reply)});bubble('user',message);bubble('assistant',reply.message);$('chatInput').value='';if(reply.assessment)renderResult(reply.assessment);$('chatStatus').textContent='Diretriz atual: '+reply.guideline;
-      }catch(error){$('chatStatus').textContent=error.message;$('chatStatus').className='error';}finally{busy=false;for(const id of ['submit','sendChat','newCase'])$(id).disabled=false;}
+      const message=$('chatInput').value.trim();if(!message||busy||!context)return;
+      if(history.length>=40){$('chatStatus').textContent='Limite da conversa atingido. Inicie um novo caso.';return;}
+      setBusy(true);$('chatStatus').textContent='DART está respondendo...';$('chatStatus').className='';
+      try{const reply=await requestChat(context,message,history);remember(context,message,reply);bubble('user',message);bubble('assistant',reply.message);$('chatInput').value='';}
+      catch(error){$('chatStatus').textContent=error.message;$('chatStatus').className='error';}finally{setBusy(false);}
     };
     $('chatInput').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();$('sendChat').click();}});
-    $('newCase').onclick=()=>{history=[];context=null;$('chatLog').replaceChildren();$('chatInput').value='';$('chatStatus').textContent='Novo caso iniciado.';$('result').hidden=true;$('message').textContent='';$('caseText').value='';$('referenceDate').value='';$('injury').value='';renderQuestions();$('chatInput').focus();};
+    $('newCase').onclick=()=>{history=[];context=null;$('chatLog').replaceChildren();$('chatInput').value='';$('chatStatus').textContent='';$('chatPanel').hidden=true;document.querySelector('.grid').hidden=false;$('message').textContent='';$('referenceDate').value='';$('injury').value='';renderQuestions();$('injury').focus();};
   </script>
 </body></html>
