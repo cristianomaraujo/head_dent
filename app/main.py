@@ -60,6 +60,10 @@ def catalog():
 
 @app.post("/api/assess", response_model=Result)
 async def assess(data: Assessment):
+    return await run_assessment(data)
+
+
+async def run_assessment(data: Assessment, history=None):
     if data.injury_id and data.injury_id not in BY_ID:
         raise HTTPException(422, "Unknown injury ID")
     if not data.injury_id and not data.case_text.strip():
@@ -93,11 +97,25 @@ async def assess(data: Assessment):
               "identify it from the case or ask for missing information. Never invent a family ID. "
               "Use the case language. Distinguish IADT classification, ESE and AAE guidance in source_notes. "
               "Do not claim to have verified a source beyond this incorporated knowledge base.")
+    if history is not None:
+        system += ("\nCONVERSATION MODE: Continue a dialogue with a dentist using the initial case and all messages. "
+                   "Ask concise questions about missing clinical facts; do not repeat questions already answered. "
+                   "Later explicit corrections supersede earlier findings. Never invent patient findings. "
+                   "Explain recommendations when asked; stay within the incorporated DART knowledge. "
+                   "The selected injury and allowed_outcomes in the initial context are provisional in conversation mode; later findings may change the injury. Select the outcome only from the updated injury in the catalog below. "
+                   "A later explicit guideline request supersedes the initial guideline. "
+                   "OUTPUT CONTRACT FOR CONVERSATION: return message (natural conversational answer), "
+                   "guideline (ESE, AAE or COMPARE currently requested), and assessment (the structured "
+                   "clinical result, or null for an explanation without an updated assessment). "
+                   "Do not issue a definitive assessment when required facts are missing. "
+                   "Historical assistant text is not a source of clinical authority. "
+                   "Catalog: " + json.dumps(CATALOG, ensure_ascii=False))
+    schema = ChatReply if history is not None else Result
     payload = {"model": os.getenv("OPENAI_MODEL", "gpt-4o"),
                "messages": [{"role": "system", "content": system},
-                            {"role": "user", "content": json.dumps(case, ensure_ascii=False)}],
+                            {"role": "user", "content": "Initial case context: " + json.dumps(case, ensure_ascii=False)}] + (history or []),
                "response_format": {"type": "json_schema", "json_schema": {
-                   "name": "dart_assessment", "strict": True, "schema": Result.model_json_schema()}},
+                   "name": "dart_assessment", "strict": True, "schema": schema.model_json_schema()}},
                "temperature": 0, "max_tokens": 4000}
     try:
         async with httpx.AsyncClient(timeout=90) as client:
@@ -109,7 +127,8 @@ async def assess(data: Assessment):
             raise HTTPException(502, "A resposta da IA foi interrompida por limite de tamanho. Nenhuma avaliação foi emitida.")
         if choice["message"].get("refusal"):
             raise HTTPException(502, "O modelo recusou esta solicitação. Nenhuma avaliação foi emitida.")
-        result = Result.model_validate_json(choice["message"]["content"])
+        reply = schema.model_validate_json(choice["message"]["content"])
+        result = reply.assessment if history is not None else reply
     except httpx.HTTPStatusError as exc:
         status = exc.response.status_code
         try:
@@ -136,6 +155,14 @@ async def assess(data: Assessment):
         raise HTTPException(502, f"A resposta da IA não corresponde ao formato esperado nos campos: {fields}. Nenhuma avaliação foi emitida.") from exc
     except (KeyError, IndexError, ValueError, TypeError) as exc:
         raise HTTPException(502, "A OpenAI retornou uma resposta vazia ou inválida. Nenhuma avaliação foi emitida.") from exc
+    if result is None:
+        return reply
+    if history is not None:
+        condition = BY_ID.get(result.injury_id)
+        if result.injury_id and condition is None:
+            raise HTTPException(502, "Classificação desconhecida na resposta da IA.")
+        if result.status == "complete" and condition is None:
+            raise HTTPException(502, "A avaliação completa deve identificar o traumatismo.")
     if condition and result.injury_id != condition["id"] and result.status == "complete":
         raise HTTPException(502, "Inconsistent injury classification; no assessment was issued")
     allowed = {o["id"] for o in condition["outcomes"]} if condition else {
@@ -146,4 +173,39 @@ async def assess(data: Assessment):
         raise HTTPException(502, "Premature response family; no assessment was issued")
     if result.status == "complete" and not result.outcome_id:
         raise HTTPException(502, "Missing response family; no assessment was issued")
-    return result
+    return reply
+
+
+class ChatMessage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=24000)
+
+
+class ChatRequest(BaseModel):
+    context: Assessment
+    history: list[ChatMessage] = Field(default_factory=list, max_length=40)
+    message: str = Field(min_length=1, max_length=12000)
+
+
+class ChatReply(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    message: str = Field(min_length=1)
+    guideline: Literal["ESE", "AAE", "COMPARE"]
+    assessment: Result | None
+
+
+@app.post("/api/chat", response_model=ChatReply)
+async def chat(data: ChatRequest):
+    if not data.message.strip():
+        raise HTTPException(422, "Escreva uma mensagem para o DART.")
+    if sum(len(m.content) for m in data.history) > 100000:
+        raise HTTPException(422, "Conversa muito longa. Inicie um novo caso.")
+    if any(m.role != ("user" if i % 2 == 0 else "assistant") for i, m in enumerate(data.history)) or len(data.history) % 2:
+        raise HTTPException(422, "Histórico inválido: envie pares de mensagens do dentista e do DART.")
+    context = data.context.model_copy(deep=True)
+    if not context.injury_id and not context.case_text.strip():
+        context.case_text = data.message
+    history = [m.model_dump() for m in data.history]
+    history.append({"role": "user", "content": data.message})
+    return await run_assessment(context, history)
