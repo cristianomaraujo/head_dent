@@ -10,7 +10,7 @@ import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict, ValidationError
 
 from knowledge.dart_conditions import condicoes_dart
 
@@ -31,6 +31,7 @@ class Assessment(BaseModel):
 
 
 class Result(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     injury_id: str | None
     outcome_id: str | None
     status: Literal["complete", "needs_information", "incompatible"]
@@ -68,7 +69,7 @@ async def assess(data: Assessment):
         valid = {q["key"]: {o["value"] for o in q["options"]} for q in condition["questions"]}
         if any(key not in valid or value not in valid[key] for key, value in data.answers.items()):
             raise HTTPException(422, "An answer does not match the selected condition")
-    api_key = os.getenv("OPENAI_API_KEY") or os.getenv("SENHA_OPEN_AI")
+    api_key = (os.getenv("OPENAI_API_KEY") or os.getenv("SENHA_OPEN_AI") or "").strip()
     if not api_key:
         raise HTTPException(503, "Configure OPENAI_API_KEY on the server")
 
@@ -95,16 +96,46 @@ async def assess(data: Assessment):
     payload = {"model": os.getenv("OPENAI_MODEL", "gpt-4o"),
                "messages": [{"role": "system", "content": system},
                             {"role": "user", "content": json.dumps(case, ensure_ascii=False)}],
-               "response_format": {"type": "json_object"}, "temperature": 0,
-               "max_tokens": 2400}
+               "response_format": {"type": "json_schema", "json_schema": {
+                   "name": "dart_assessment", "strict": True, "schema": Result.model_json_schema()}},
+               "temperature": 0, "max_tokens": 4000}
     try:
         async with httpx.AsyncClient(timeout=90) as client:
             response = await client.post("https://api.openai.com/v1/chat/completions", json=payload,
                                          headers={"Authorization": f"Bearer {api_key}"})
         response.raise_for_status()
-        result = Result.model_validate_json(response.json()["choices"][0]["message"]["content"])
-    except (httpx.HTTPError, KeyError, ValueError) as exc:
-        raise HTTPException(502, "Model request or response failed; no assessment was issued") from exc
+        choice = response.json()["choices"][0]
+        if choice.get("finish_reason") == "length":
+            raise HTTPException(502, "A resposta da IA foi interrompida por limite de tamanho. Nenhuma avaliação foi emitida.")
+        if choice["message"].get("refusal"):
+            raise HTTPException(502, "O modelo recusou esta solicitação. Nenhuma avaliação foi emitida.")
+        result = Result.model_validate_json(choice["message"]["content"])
+    except httpx.HTTPStatusError as exc:
+        status = exc.response.status_code
+        try:
+            error_code = exc.response.json().get("error", {}).get("code")
+        except (ValueError, AttributeError):
+            error_code = None
+        messages = {
+            401: "A OpenAI rejeitou a chave. Confira OPENAI_API_KEY no Railway.",
+            403: "A chave ou o projeto não tem permissão para esta solicitação na OpenAI.",
+            404: "O modelo configurado em OPENAI_MODEL não está disponível para esta chave.",
+            400: "A OpenAI rejeitou os parâmetros da solicitação. Confira OPENAI_MODEL; o padrão é gpt-4o.",
+            429: "A OpenAI atingiu o limite de requisições. Aguarde e tente novamente.",
+        }
+        detail = messages.get(status, f"A OpenAI retornou erro HTTP {status}. Nenhuma avaliação foi emitida.")
+        if error_code in ("insufficient_quota", "billing_hard_limit_reached"):
+            detail = "A conta da API OpenAI está sem cota disponível. Confira créditos e faturamento do projeto na plataforma OpenAI."
+        raise HTTPException(502, detail) from exc
+    except httpx.TimeoutException as exc:
+        raise HTTPException(504, "A OpenAI demorou além do limite de 90 segundos. Tente novamente.") from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(502, "O servidor não conseguiu se conectar à OpenAI. Tente novamente.") from exc
+    except ValidationError as exc:
+        fields = ", ".join(".".join(map(str, e["loc"])) for e in exc.errors())
+        raise HTTPException(502, f"A resposta da IA não corresponde ao formato esperado nos campos: {fields}. Nenhuma avaliação foi emitida.") from exc
+    except (KeyError, IndexError, ValueError, TypeError) as exc:
+        raise HTTPException(502, "A OpenAI retornou uma resposta vazia ou inválida. Nenhuma avaliação foi emitida.") from exc
     if condition and result.injury_id != condition["id"] and result.status == "complete":
         raise HTTPException(502, "Inconsistent injury classification; no assessment was issued")
     allowed = {o["id"] for o in condition["outcomes"]} if condition else {
