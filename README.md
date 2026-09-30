@@ -54,3 +54,12 @@ The interface opens with a guided triage form. The dentist selects an injury and
 `/api/chat` accepts `context` (the assessment input), `history` (alternating user/assistant pairs), and `message`. It returns conversational `message`, current `guideline`, and optional structured `assessment` for evaluation tools. Later findings and explicit guideline changes are considered across turns. History remains in browser memory until reload or **Novo caso**; conversations allow up to 20 rounds, including the initial bot response. The API stores no conversations in a database. Automated software tests do not establish clinical accuracy.
 
 For repeated expert-labeled conversational tests, use `python -m evals.chat cases.jsonl --repeats 10 --url http://127.0.0.1:8000`. Each JSONL case has `case_id`, `reviewed_by`, `context`, and `turns`; each turn has `message`, `expected_status` (`complete`, `needs_information`, `incompatible`, or `no_assessment`) and optionally `expected_outcome_id`. Results include a CSV and full response transcripts. Calls to a live server use the configured paid model. Clinical ground truth must be supplied by reviewers; matching outcome/status alone does not validate the response text.
+
+
+### Multilingual triage
+
+A language selector lists ISO 639-1 languages by localized and native names. An additional language-name field allows requests for languages outside that list. The browser language is suggested initially. This is a selection catalog, not an OpenAI guarantee of equal model performance in every listed language.
+
+`POST /api/localize` translates interface strings, injury names, and the selected injury's questions and options. Only labels change; clinical answer codes remain unchanged. Translation uses the configured OpenAI model and incurs API usage on cache misses. Translations are cached in server memory (cleared on restart) by language, injury and model. They are automatically generated, not clinically reviewed. A translation failure is shown explicitly and prevents starting triage in a partially translated state. Previous chat messages are not translated when changing the interface language.
+
+The API accepts language names or tags beyond Portuguese/English/Spanish. Initial bot responses follow the selected language; later responses follow the dentist's substantive message language or explicit language request. Right-to-left layout is enabled for listed RTL language codes. Software tests use simulated translations and do not establish clinical equivalence across languages.
