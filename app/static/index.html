@@ -54,7 +54,7 @@
       if(busy)return;if(!$('injury').value){$('message').textContent=texts.choose||'Selecione o traumatismo para iniciar a conversa.';return;}
       const answers={};document.querySelectorAll('[data-question]').forEach(el=>{if(el.value)answers[el.dataset.question]=el.value});
       const data={injury_id:$('injury').value,guideline:$('guideline').value,answers,case_text:'',reference_date:$('referenceDate').value||null,language};
-      const message='Receba esta ficha de triagem e faça a primeira resposta ao dentista. Se faltarem dados clínicos necessários, diga quais são e pergunte ao profissional, sem presumir os achados. Se os dados forem suficientes, apresente a orientação com base no DART.';
+      const message='Response language selected by the clinician: '+language+'. Respond only in that language. Receba esta ficha de triagem e faça a primeira resposta ao dentista. Se faltarem dados clínicos necessários, diga quais são e pergunte ao profissional, sem presumir os achados. Se os dados forem suficientes, apresente a orientação com base no DART.';
       setBusy(true);$('message').textContent=texts.responding||'DART está respondendo…';$('message').className='';
       try{const reply=await requestChat(data,message,[]);history=[];remember(data,message,reply);$('chatLog').replaceChildren();$('chatPanel').hidden=false;document.querySelector('.grid').hidden=true;bubble('assistant',reply.message);$('message').textContent='';$('chatInput').focus();}
       catch(error){$('message').textContent=error.message;$('message').className='error';}finally{setBusy(false);}
