@@ -26,3 +26,18 @@ def test_translation_cache_and_immutable_keys(monkeypatch):
 def test_localization_rejects_unknown_injury():
     with pytest.raises(HTTPException):
         asyncio.run(main.localize(main.LocalizationRequest(language='en',injury_id='unknown')))
+
+
+def test_selected_language_overrides_portuguese_launch(monkeypatch):
+    captured={}
+    async def fake(payload,schema):
+        captured.update(payload)
+        return main.ChatReply(message="Welche Angaben fehlen?",guideline="ESE",assessment=None)
+    monkeypatch.setenv('OPENAI_API_KEY','test-only')
+    monkeypatch.setattr(main,'request_model',fake)
+    result=asyncio.run(main.chat(main.ChatRequest(context={'guideline':'ESE','injury_id':'T01','language':'de'},message='Receba esta ficha de triagem')))
+    system=captured['messages'][0]['content']
+    assert 'AUTHORITATIVE RESPONSE LANGUAGE: de' in system
+    assert 'maintain that language throughout the conversation' not in system
+    assert 'historical messages' in system
+    assert result.message=="Welche Angaben fehlen?"
