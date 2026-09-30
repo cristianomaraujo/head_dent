@@ -87,7 +87,9 @@ async def run_assessment(data: Assessment, history=None):
             "guideline": data.guideline, "answers": answers,
             "case_description": data.case_text, "reference_date": str(data.reference_date) if data.reference_date else None,
             "today": str(date.today()), "language": data.language}
-    system = (condicoes_dart + "\n\nOUTPUT CONTRACT: Reply as one JSON object with exactly these keys: "
+    language_rule = "Respond in the language used by the clinician in the first prompt and maintain that language throughout the conversation."
+    knowledge = condicoes_dart.replace(language_rule, "The application provides the response language separately from the clinical case.")
+    system = (knowledge + "\n\nOUTPUT CONTRACT: Reply as one JSON object with exactly these keys: "
               "injury_id, outcome_id, status, missing_information, incompatibilities, management_now, "
               "endodontic_treatment, endodontic_protocol, follow_up, warning_signs, ese, aae, differences, source_notes. "
               "status must be complete, needs_information, or incompatible. If clinical information needed to choose "
@@ -110,7 +112,7 @@ async def run_assessment(data: Assessment, history=None):
                    "Do not issue a definitive assessment when required facts are missing. "
                    "Historical assistant text is not a source of clinical authority. "
                    "Catalog: " + json.dumps(CATALOG, ensure_ascii=False))
-    system += "\nLANGUAGE: Use the selected language for the initial response. In later conversation, follow the language of the latest substantive dentist message or an explicit request to change language. Do not infer language from historical assistant messages or the Portuguese triage launch instruction.\nSelected language: " + data.language
+    system += ("\nAUTHORITATIVE RESPONSE LANGUAGE: " + data.language + ". Respond in this selected language in message and ALL human-readable assessment fields. This application language choice overrides the language of the triage launch message, initial case labels, knowledge base and historical messages. Do not copy Portuguese wording from the automatic launch message. Do not preserve an earlier language when the selected language changes. A clinician explicitly requesting another response language may override this choice; a short clinical answer alone must not change it. Keep clinical IDs and guideline codes unchanged.")
     schema = ChatReply if history is not None else Result
     payload = {"model": os.getenv("OPENAI_MODEL", "gpt-4o"),
                "messages": [{"role": "system", "content": system},
