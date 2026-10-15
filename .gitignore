@@ -174,3 +174,8 @@ cython_debug/
 .pypirc
 eval-results.csv
 reviewed-cases.jsonl
+eval_runs/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+

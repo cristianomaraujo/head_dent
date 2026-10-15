@@ -2,12 +2,14 @@
 
 import json
 import os
+import hashlib
+from contextvars import ContextVar
 from datetime import date
 from pathlib import Path
 from typing import Literal
 
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, ConfigDict, ValidationError, create_model
@@ -19,6 +21,24 @@ CATALOG = json.loads((ROOT / "knowledge/catalog.json").read_text())
 BY_ID = {item["id"]: item for item in CATALOG}
 app = FastAPI(title="DART", version="0.1.0", description="Research prototype for dentists")
 app.mount("/static", StaticFiles(directory=ROOT / "app/static"), name="static")
+MODEL_TRACE = ContextVar("dart_model_trace", default=None)
+ASSESSMENT_SETTINGS = {"temperature": 0, "max_tokens": 4000}
+
+
+def evaluation_info():
+    """Public version identifiers only; never return keys or patient data."""
+    sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+    return {"evaluation_contract": 1, "configured_model": os.getenv("OPENAI_MODEL", "gpt-4o"),
+            "knowledge_sha256": sha(ROOT / "knowledge/dart_conditions.py"),
+            "catalog_sha256": sha(ROOT / "knowledge/catalog.json"),
+            "service_sha256": sha(Path(__file__)),
+            "commit_git": os.getenv("RAILWAY_GIT_COMMIT_SHA") or os.getenv("DART_GIT_COMMIT_SHA"),
+            "model_parameters": ASSESSMENT_SETTINGS}
+
+
+@app.get("/api/evaluation-info")
+def get_evaluation_info():
+    return evaluation_info()
 
 
 class Assessment(BaseModel):
@@ -27,6 +47,7 @@ class Assessment(BaseModel):
     answers: dict[str, str] = Field(default_factory=dict)
     case_text: str = Field(default="", max_length=12000)
     reference_date: date | None = None
+    evaluation_date: date | None = None
     language: str = Field(default="pt", min_length=2, max_length=80)
 
 
@@ -86,7 +107,7 @@ async def run_assessment(data: Assessment, history=None):
             "allowed_outcomes": condition["outcomes"] if condition else [],
             "guideline": data.guideline, "answers": answers,
             "case_description": data.case_text, "reference_date": str(data.reference_date) if data.reference_date else None,
-            "today": str(date.today()), "language": data.language}
+            "today": str(data.evaluation_date or date.today()), "language": data.language}
     language_rule = "Respond in the language used by the clinician in the first prompt and maintain that language throughout the conversation."
     knowledge = condicoes_dart.replace(language_rule, "The application provides the response language separately from the clinical case.")
     system = (knowledge + "\n\nOUTPUT CONTRACT: Reply as one JSON object with exactly these keys: "
@@ -119,7 +140,7 @@ async def run_assessment(data: Assessment, history=None):
                             {"role": "user", "content": "Initial case context: " + json.dumps(case, ensure_ascii=False)}] + (history or []),
                "response_format": {"type": "json_schema", "json_schema": {
                    "name": "dart_assessment", "strict": True, "schema": schema.model_json_schema()}},
-               "temperature": 0, "max_tokens": 4000}
+               **ASSESSMENT_SETTINGS}
     reply = await request_model(payload, schema)
     result = reply.assessment if history is not None else reply
     if result is None:
@@ -163,7 +184,7 @@ class ChatReply(BaseModel):
 
 
 @app.post("/api/chat", response_model=ChatReply)
-async def chat(data: ChatRequest):
+async def chat(data: ChatRequest, response: Response = None):
     if not data.message.strip():
         raise HTTPException(422, "Escreva uma mensagem para o DART.")
     if sum(len(m.content) for m in data.history) > 100000:
@@ -175,7 +196,15 @@ async def chat(data: ChatRequest):
         context.case_text = data.message
     history = [m.model_dump() for m in data.history]
     history.append({"role": "user", "content": data.message})
-    return await run_assessment(context, history)
+    token = MODEL_TRACE.set(None)
+    try:
+        reply = await run_assessment(context, history)
+        trace = MODEL_TRACE.get()
+        if response is not None and trace is not None:
+            response.headers["X-DART-Audit"] = json.dumps(trace, separators=(",", ":"))
+        return reply
+    finally:
+        MODEL_TRACE.reset(token)
 
 
 async def request_model(payload, schema):
@@ -187,12 +216,17 @@ async def request_model(payload, schema):
             response = await client.post("https://api.openai.com/v1/chat/completions", json=payload,
                                          headers={"Authorization": f"Bearer {api_key}"})
         response.raise_for_status()
-        choice = response.json()["choices"][0]
+        body = response.json()
+        choice = body["choices"][0]
         if choice.get("finish_reason") == "length":
             raise HTTPException(502, "A resposta da IA foi interrompida por limite de tamanho. Nenhuma avaliação foi emitida.")
         if choice["message"].get("refusal"):
             raise HTTPException(502, "O modelo recusou esta solicitação. Nenhuma avaliação foi emitida.")
         reply = schema.model_validate_json(choice["message"]["content"])
+        MODEL_TRACE.set({**evaluation_info(), "model": body.get("model"),
+                         "response_id": body.get("id"), "system_fingerprint": body.get("system_fingerprint"),
+                         "usage": body.get("usage") or {},
+                         "prompt_sha256": hashlib.sha256(payload["messages"][0]["content"].encode()).hexdigest()})
     except httpx.HTTPStatusError as exc:
         status = exc.response.status_code
         try:
@@ -256,3 +290,4 @@ async def localize(data: LocalizationRequest):
         TRANSLATIONS.clear()
     TRANSLATIONS[cache_key] = translated
     return {"texts": translated}
+
