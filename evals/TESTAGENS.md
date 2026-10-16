@@ -1,5 +1,7 @@
 # Testagens do DART a partir do Excel
 
+> Para o desenho atual de **uma resposta por execução**, com conduta adequada como desfecho primário, usar [AVALIACAO_UNICA.md](AVALIACAO_UNICA.md) e `evals.single_response`. O roteiro de três trocas abaixo fica como documentação dos pilotos anteriores.
+
 O responsável pelo projeto confirmou a revisão dos casos e referências em 15/10/2026. A confirmação é registrada como revisão do responsável; o programa não a transforma em duas revisões independentes. Não é necessário reenviar a chave da OpenAI: o executor acessa a API do DART, que utiliza a chave já configurada no servidor.
 
 ## Preparação do servidor
