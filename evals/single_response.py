@@ -84,8 +84,10 @@ def prepare(source, directory, reviewed_by):
             triage.append(f"{q['key']} - {q['label']}: {labels.get(value, 'Não informado')}")
             if value is None:
                 unknown.append(f"{q['key']} - {q['label']}")
+        form_text = (f"Traumatismo: {condition['name']} ({condition['id']})\nIdioma: Português\n"
+                     f"Data de referência: {core.iso(entry['data_evento'])}\n" + "\n".join(triage))
         approved = entry.get("aprovacao_entrada") == 1
-        if entry.get("triagem_enviada") not in (None, "", "\n".join(triage)):
+        if entry.get("triagem_enviada") not in (None, "", form_text):
             raise ValueError(f"{entry_id}: displayed triage and actual codes differ; regenerate the mapping")
         note = entry.get("justificativa_suficiencia") or ""
         if approved and v == 1 and unknown and not note.strip():
@@ -101,7 +103,7 @@ def prepare(source, directory, reviewed_by):
                      if v == 1 else "Reconhecer a insuficiência, solicitar os dados essenciais omitidos e não presumir seus valores nem definir conduta dependente deles. Orientação provisória segura é aceitável.")
         display = {**{k: r[k] for k in core.METADATA_FIELDS}, "entrada_id": entry_id,
                    "pareamento_repeticoes": f"{entry_id}-G{g}", "pareamento_versoes": f"{r['case_id']}-G{g}-R{rep}",
-                   "tipo_caso": "Completo" if v == 1 else "Incompleto", "triagem_enviada": "\n".join(triage),
+                   "tipo_caso": "Completo" if v == 1 else "Incompleto", "triagem_enviada": form_text + "\nDiretriz: " + core.GUIDELINES[g],
                    "dados_omitidos": "\n".join(unknown), "dados_essenciais_a_solicitar": target,
                    "criterio_adequacao": criterion, "gabarito_clinico": rubric(gold), "gold_id": gold.get("gold_id"),
                    "data_evento": context["reference_date"], "data_avaliacao": context["evaluation_date"],
