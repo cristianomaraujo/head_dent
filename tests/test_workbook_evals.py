@@ -19,14 +19,17 @@ def make_plan(tmp_path):
         "diretriz_code": 1, "idioma_code": 1, "repeticao": 1,
         "ordem_execucao": 1, "analise_principal_code": 0},
         "context": {"guideline": "ESE", "injury_id": "T01", "answers": {},
-                    "case_text": "Caso parcial", "reference_date": "2026-09-30",
+                    "case_text": "", "reference_date": "2026-09-30",
                     "evaluation_date": "2026-10-01", "language": "pt"},
-        "turns": [{"message": "Dados iniciais", "expected_status": "needs_information"},
+        "turns": [{"message": ev.initial_message(), "expected_status": None},
                   {"message": "Complemento: ápice aberto", "expected_status": "complete"},
-                  {"message": "Quais são as datas?", "expected_status": "complete"}]}]
+                  {"message": "Quais são as datas?", "expected_status": "complete"}],
+        "review_only": {"full_case": "SECRET_REFERENCE", "triage": [
+            {"key": "A", "field": "Apex", "selected_label": "Não informado", "withheld": True,
+             "reference_label": "Open"}]}}]
     raw = ev.encode(plan[0]) + "\n"
     refs = ev.encode([{"gold_id": "SECRET_REFERENCE"}])
-    manifest = {"schema": 1, "plan_sha256": ev.digest(raw.encode()),
+    manifest = {"schema": 1, "flow": ev.FLOW, "plan_sha256": ev.digest(raw.encode()),
                 "references_sha256": ev.digest(refs.encode()), "workbook_sha256": "bank-hash",
                 "result_headers": list(plan[0]["metadata"]) + ["status_execucao", "correto_final", "completo_final", "erro_critico_final",
                     "executado_em_utc", "latencia_s", "erro_tecnico", "transcricao_arquivo", "modelo", "prompt_sha256",
@@ -75,13 +78,23 @@ def test_three_turns_resume_and_unscored_export(tmp_path):
     assert [len(c["history"]) for c in calls] == [0, 2, 4]
     assert calls[1]["message"] == "Complemento: ápice aberto"
     assert calls[0]["context"]["evaluation_date"] == "2026-10-01"
+    assert calls[0]["context"]["case_text"] == "" and calls[0]["history"] == []
+    assert calls[0]["message"] == ev.initial_message()
     row = output(directory)[0]
     assert row["status_execucao"] == "1" and row["tokens_total"] == "30"
     assert row["correto_final"] == row["completo_final"] == row["erro_critico_final"] == row["custo_usd"] == ""
     assert row["resposta_t1"].startswith("'=not")
-    assert row["status_match_t1"] == "1"
+    assert row["status_match_t1"] == ""  # Complete form is not assumed to mean complete clinical data.
     raw = [json.loads(l) for l in (directory / "transcricoes.jsonl").read_text().splitlines()]
     assert raw[0]["reply"]["message"] == "=not a formula"
+    with (directory / "conferencia.csv").open(encoding="utf-8-sig", newline="") as f:
+        comparison = list(csv.DictReader(f, delimiter=";"))
+    assert len(comparison) == 3
+    assert comparison[0]["dados_clinicos_disponiveis"] == ""
+    assert "Apex: Não informado" in comparison[0]["opcoes_da_triagem"]
+    assert "valor retido: Open" in comparison[0]["campos_omitidos_intencionalmente"]
+    assert "ápice aberto" in comparison[1]["dados_clinicos_disponiveis"]
+    assert all(not row["correto"] and not row["completo"] for row in comparison)
 
 
 def test_failure_is_preserved_and_retry_does_not_repeat_successful_turn(tmp_path):
@@ -140,9 +153,11 @@ def test_reference_change_rejected_before_collection(tmp_path):
 
 def test_reader_preserves_pairing_review_attestation_and_dates(tmp_path, monkeypatch):
     import openpyxl
+    catalog = json.loads((ev.SOURCE_ROOT / "knowledge/catalog.json").read_text())
+    full_answers = {q["key"]: q["options"][0]["value"] for q in catalog[0]["questions"]}
     case = {"case_id": "D001", "case_num": 1, "template_id": "T01-M1", "trauma_code": 1,
             "caso_completo": "Completo", "caso_dados_faltantes": "Parcial", "resposta_complementar": "Ápice aberto",
-            "dados_a_solicitar": "apice", "triagem_completa_json": "{}", "triagem_incompleta_json": "{}",
+            "dados_a_solicitar": "apice", "triagem_completa_json": json.dumps(full_answers), "triagem_incompleta_json": "{}",
             "data_evento": datetime(2026, 9, 30), "data_avaliacao": datetime(2026, 10, 1)}
     golds = [{"case_id": "D001", "diretriz_code": g, "data_aprovacao": datetime(2026, 10, 15)} for g in (1, 2)]
     headers = ["execution_id", "case_num", "case_id", "template_id", "trauma_code", "versao_code", "diretriz_code",
@@ -167,11 +182,23 @@ def test_reader_preserves_pairing_review_attestation_and_dates(tmp_path, monkeyp
     _, plan = ev.load_plan(directory)
     assert manifest["n_cases"] == 1 and manifest["n_conversations"] == 4
     assert manifest["reviewed_by"] == "project-owner"
-    assert plan[2]["context"]["case_text"] == "Parcial"
+    assert all(p["context"]["case_text"] == "" for p in plan)
+    assert plan[0]["context"]["answers"] == full_answers
+    assert plan[2]["context"]["answers"] == {}
     assert plan[2]["context"]["reference_date"] == "2026-09-30"
-    assert plan[2]["turns"][1]["message"].endswith("Ápice aberto")
+    assert all(p["turns"][1]["message"].endswith("Completo") for p in plan)
+    assert all(q["withheld"] for q in plan[2]["review_only"]["triage"])
+    assert all(not q["withheld"] for q in plan[0]["review_only"]["triage"])
     with pytest.raises(ValueError, match="immutable"):
         ev.prepare(source, directory, "project-owner")
+
+
+def test_initial_message_matches_site_and_form_has_no_narrative():
+    import re
+    html = (ev.SOURCE_ROOT / "app/static/index.html").read_text(encoding="utf-8")
+    message = re.search(r"const message='(Response language selected by the clinician: .*?)';", html).group(1)
+    assert message.replace("'+language+'", "pt") == ev.initial_message()
+    assert "answers,case_text:'',reference_date:" in html
 
 
 def test_evaluation_clock_and_audit_headers_are_real_response_metadata(monkeypatch):

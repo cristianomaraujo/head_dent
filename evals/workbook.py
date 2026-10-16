@@ -20,10 +20,19 @@ import httpx
 
 
 SCHEMA = 1
+FLOW = "site-triage-then-chat-v2"
 GUIDELINES = {1: "ESE", 2: "AAE"}
 SOURCE_ROOT = Path(__file__).resolve().parents[1]
 METADATA_FIELDS = ("execution_id", "case_num", "case_id", "template_id", "trauma_code", "versao_code",
                    "diretriz_code", "idioma_code", "repeticao", "ordem_execucao", "analise_principal_code")
+
+
+def initial_message(language="pt"):
+    # Same message sent by app/static/index.html when the clinician starts a case.
+    return ("Response language selected by the clinician: " + language + ". Respond only in that language. "
+            "Receba esta ficha de triagem e faça a primeira resposta ao dentista. Se faltarem dados clínicos necessários, "
+            "diga quais são e pergunte ao profissional, sem presumir os achados. Se os dados forem suficientes, "
+            "apresente a orientação com base no DART.")
 
 
 def encode(value):
@@ -79,6 +88,7 @@ def prepare(source, destination, reviewed_by, review_note=""):
         raise ValueError("Duplicate case or reference keys")
     catalog = json.loads((SOURCE_ROOT / "knowledge/catalog.json").read_text(encoding="utf-8"))
     options = {c["id"]: {q["key"]: {o["value"] for o in q["options"]} for q in c["questions"]} for c in catalog}
+    conditions = {c["id"]: c for c in catalog}
     plan, seen_ids, seen_order, seen_configuration = [], set(), set(), set()
     required = ["caso_completo", "caso_dados_faltantes", "resposta_complementar", "dados_a_solicitar"]
     for c in case_rows:
@@ -110,25 +120,40 @@ def prepare(source, destination, reviewed_by, review_note=""):
                 k not in options[injury] or value not in options[injury][k] for k, value in answers.items()):
             raise ValueError(f"Triage codes do not match the catalog: {c['case_id']}")
         context = {"injury_id": injury, "guideline": GUIDELINES[g], "answers": answers,
-                   "case_text": c["caso_completo" if v == 1 else "caso_dados_faltantes"],
+                   "case_text": "",
                    "reference_date": iso(c["data_evento"]),
                    "evaluation_date": iso(c["data_avaliacao"]), "language": "pt"}
+        complete_answers = json.loads(c["triagem_completa_json"])
+        triage = []
+        for q in conditions[injury]["questions"]:
+            labels = {o["value"]: o["label"] for o in q["options"]}
+            selected = answers.get(q["key"])
+            triage.append({"key": q["key"], "field": q["label"], "selected_code": selected,
+                           "selected_label": labels.get(selected, "Não informado"),
+                           "withheld": selected is None and q["key"] in complete_answers,
+                           "reference_code": complete_answers.get(q["key"]),
+                           "reference_label": labels.get(complete_answers.get(q["key"]), "")})
         turns = [
-            {"message": "Receba estes dados clínicos. A categoria selecionada é provisória: confirme sua compatibilidade com os achados. Responda em português; solicite somente dados necessários que faltarem, sem presumir os achados.",
-             "expected_status": "complete" if v == 1 else "needs_information"},
-            {"message": "Explique a decisão de tratar ou acompanhar neste caso." if v == 1 else "Complementando a informação do caso: " + c["resposta_complementar"],
+            {"message": initial_message(), "expected_status": None},
+            {"message": "Acrescentando os dados clínicos do caso: " + c["caso_completo"],
              "expected_status": "complete"},
             {"message": "Detalhe as etapas clínicas e o acompanhamento com datas de calendário a partir do evento de referência. Identifique a fonte e suas limitações.",
              "expected_status": "complete"},
         ]
         metadata = {k: r[k] for k in METADATA_FIELDS}
-        plan.append({"execution_id": r["execution_id"], "metadata": metadata, "context": context, "turns": turns})
+        plan.append({"execution_id": r["execution_id"], "metadata": metadata, "context": context, "turns": turns,
+                     "review_only": {"condition": conditions[injury]["name"], "triage": triage,
+                                     "full_case": c["caso_completo"], "gold_id": gold[(c["case_id"], g)].get("gold_id")}})
     if not plan:
         raise ValueError("No planned conversations")
     plan.sort(key=lambda p: p["metadata"]["ordem_execucao"])
     plan_text = "".join(encode(p) + "\n" for p in plan)
     references_text = encode(gold_rows)
     manifest = {"schema": SCHEMA, "created_at_utc": now(), "reviewed_by": reviewed_by,
+                "flow": FLOW, "clock": "Controlled evaluation_date from the workbook; not a form input",
+                "version_meaning": "1=all mapped triage selections; 2=withheld mapped selections. Additional clinical facts arrive in chat turn 2.",
+                "interface_sha256": digest((SOURCE_ROOT / "app/static/index.html").read_bytes()),
+                "catalog_sha256": digest((SOURCE_ROOT / "knowledge/catalog.json").read_bytes()),
                 "review_note": review_note, "source_name": source.name,
                 "workbook_sha256": digest(source.read_bytes()), "plan_sha256": digest(plan_text.encode()),
                 "references_sha256": digest(references_text.encode()),
@@ -344,15 +369,68 @@ def _export(directory):
                     assessment = a["reply"].get("assessment") or {}
                     status = assessment.get("status", "no_assessment")
                     row[f"status_t{number}"] = status
-                    row[f"status_match_t{number}"] = int(status == case["turns"][number-1]["expected_status"])
+                    expected = case["turns"][number-1].get("expected_status")
+                    if expected is not None:
+                        row[f"status_match_t{number}"] = int(status == expected)
                 writer.writerow({k: safe_csv(v) for k, v in row.items()})
         os.replace(temporary, output)
         raw_tmp = raw.with_suffix(".jsonl.tmp")
         raw_tmp.write_text("".join(encode(a)+"\n" for a in attempts), encoding="utf-8")
         os.replace(raw_tmp, raw)
+        export_comparison(directory, manifest, plan, grouped)
         return output
     finally:
         db.close()
+
+
+def export_comparison(directory, manifest, plan, grouped):
+    """One observed reply per row, with actual inputs and a separate, unsent rubric."""
+    refs = json.loads((directory / "references.json").read_text(encoding="utf-8"))
+    gold = {(g.get("case_id"), g.get("diretriz_code")): g for g in refs}
+    fields = ["execution_id", "case_id", "versao_code", "diretriz", "repeticao", "turno", "fluxo",
+              "opcoes_da_triagem", "campos_omitidos_intencionalmente", "dados_clinicos_disponiveis",
+              "mensagem_enviada", "resposta_exata_api", "resposta_exibida_no_site", "criterios_do_gabarito",
+              "correto", "completo", "erro_critico", "justificativa", "data_evento", "relogio_avaliacao",
+              "fonte_gabarito", "estado_tecnico", "historico_preservado"]
+    out = directory / "conferencia.csv"
+    temp = out.with_suffix(".csv.tmp")
+    with temp.open("w", encoding="utf-8-sig", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields, delimiter=";")
+        writer.writeheader()
+        for case in plan:
+            observed = grouped.get(case["execution_id"], [])
+            success = {a["turn"]: a for a in observed if a["state"] == "success"}
+            review = case.get("review_only", {})
+            triage = review.get("triage", [])
+            form = "\n".join(f"{q['key']} - {q['field']}: {q['selected_label']}" for q in triage)
+            withheld = "\n".join(f"{q['key']} - {q['field']} (valor retido: {q['reference_label']})" for q in triage if q["withheld"])
+            ref = gold.get((case["metadata"]["case_id"], case["metadata"]["diretriz_code"]), {})
+            rubric = "\n\n".join(f"{k}: {ref[k]}" for k in ("decisao_esperada", "abordagem_pulpar", "etapas_clinicas", "acompanhamento_datas", "transparencia_fonte", "seguranca") if ref.get(k))
+            for turn, a in sorted(success.items()):
+                prompt = a["request"]
+                first = ("Avaliar se solicita os dados pertinentes ainda ausentes, sem presumir achados. "
+                         "Formulário preenchido não garante que todo dado clínico necessário esteja disponível. "
+                         "Uma orientação condicional segura é aceitável; não exigir conduta definitiva antes dos dados necessários.")
+                available = prompt["context"].get("case_text", "")
+                # Include only clinical messages already delivered, never future/reference facts.
+                clinical_messages = [m["content"] for m in prompt.get("history", []) if m["role"] == "user" and m["content"] != initial_message()]
+                if turn > 1:
+                    clinical_messages.append(prompt["message"])
+                available = "\n\n".join(x for x in [available, *clinical_messages] if x)
+                row = {"execution_id": case["execution_id"], "case_id": case["metadata"]["case_id"],
+                       "versao_code": case["metadata"]["versao_code"], "diretriz": prompt["context"]["guideline"],
+                       "repeticao": case["metadata"]["repeticao"], "turno": turn,
+                       "fluxo": manifest.get("flow", "legacy-api-narrative-v1"), "opcoes_da_triagem": form,
+                       "campos_omitidos_intencionalmente": withheld, "dados_clinicos_disponiveis": available,
+                       "mensagem_enviada": prompt["message"], "resposta_exata_api": a["reply"]["message"],
+                       "resposta_exibida_no_site": a["reply"]["message"].replace("**", ""),
+                       "criterios_do_gabarito": first if turn == 1 else rubric,
+                       "data_evento": prompt["context"].get("reference_date"),
+                       "relogio_avaliacao": prompt["context"].get("evaluation_date"),
+                       "fonte_gabarito": f"{ref.get('gold_id', '')}; DOI {ref.get('doi', '')}; PDF pp. {ref.get('paginas_pdf', '')}",
+                       "estado_tecnico": a["state"], "historico_preservado": int(bool(prompt.get("history")))}
+                writer.writerow({k: safe_csv(v) for k, v in row.items()})
+    os.replace(temp, out)
 
 
 def main():
